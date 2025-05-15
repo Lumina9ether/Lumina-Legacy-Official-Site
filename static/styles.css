@@ -1,0 +1,99 @@
+body { background-color: #000; color: #fff; font-family: Orbitron, sans-serif; }
+
+
+.glow-title {
+  font-size: 2.5rem;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+  margin-bottom: 30px;
+}
+
+.tier-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.tier-card {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #00ffff88;
+  border-radius: 20px;
+  padding: 25px;
+  width: 300px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+  backdrop-filter: blur(8px);
+}
+
+.tier-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(0,255,255,0.6);
+}
+
+.tier-card h3 {
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.tier-card .price {
+  color: #00ffff;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.tier-card ul {
+  list-style: none;
+  padding: 0;
+  color: #ccc;
+}
+
+.tier-card ul li {
+  margin: 10px 0;
+}
+
+
+
+.ebook-box {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid #00ffff88;
+  border-radius: 20px;
+  padding: 30px;
+  margin: 40px auto;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 0 20px rgba(0,255,255,0.3);
+  backdrop-filter: blur(6px);
+}
+
+
+
+#orb {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 20px auto;
+  transition: all 0.3s ease;
+}
+
+.idle {
+  background: radial-gradient(circle at center, #00bfff, #001f3f);
+  box-shadow: 0 0 10px #00bfff;
+}
+
+.listening {
+  background: radial-gradient(circle at center, #ffff00, #999900);
+  box-shadow: 0 0 20px #ffff00;
+  animation: pulse 1s infinite;
+}
+
+.speaking {
+  background: radial-gradient(circle at center, #8a2be2, #4b0082);
+  box-shadow: 0 0 25px #8a2be2;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
