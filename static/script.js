@@ -27,3 +27,26 @@ function speakLumina(text) {
   };
   speechSynthesis.speak(utterance);
 }
+
+
+window.addEventListener("load", () => {
+  fetch('/speak', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: "Welcome to Lumina Legacy. I am your AI assistant." })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const audio = new Audio(data.audio);
+    const orb = document.getElementById("orb");
+    if (orb) orb.classList.add("speaking");
+
+    audio.play();
+    audio.onended = () => {
+      if (orb) {
+        orb.classList.remove("speaking");
+        orb.classList.add("idle");
+      }
+    };
+  });
+});
