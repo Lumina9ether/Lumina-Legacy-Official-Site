@@ -2,10 +2,11 @@
 from flask import Flask, request, render_template
 from google.cloud import texttospeech
 import os
+import traceback
 
 app = Flask(__name__)
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "lumina-voice-ai.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/etc/secrets/lumina-voice-ai.json"
 
 @app.route('/')
 def home():
@@ -35,6 +36,8 @@ def speak():
 
         return {"audio": "/static/greeting.mp3"}
     except Exception as e:
+        print("ERROR in /speak route:", e)
+        traceback.print_exc()
         return {"error": str(e)}, 500
 
 if __name__ == "__main__":
