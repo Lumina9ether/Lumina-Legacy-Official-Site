@@ -1,7 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", () => {
-    const orb = document.getElementById("orb");
-    const subtitle = document.getElementById("subtitle");
+    const heyLuminaBtn = document.getElementById("hey-lumina-button");
 
     async function speak(text) {
         try {
@@ -24,12 +23,60 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function onUserInteract() {
-        window.removeEventListener("click", onUserInteract);
-        window.removeEventListener("scroll", onUserInteract);
+    heyLuminaBtn.addEventListener("click", () => {
         speak("Welcome to Lumina Legacy. I am your AI assistant.");
+    });
+});
+
+    const stopButton = document.getElementById("stop-button");
+    const subtitleBox = document.getElementById("subtitles");
+
+    let currentAudio = null;
+
+    async function speak(text) {
+        try {
+            const response = await fetch("/speak", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text }),
+            });
+            const data = await response.json();
+            if (data.audio) {
+                if (currentAudio) currentAudio.pause();
+                currentAudio = new Audio(data.audio);
+                subtitleBox.textContent = text;
+                await currentAudio.play();
+            } else {
+                console.error("No audio returned:", data);
+            }
+        } catch (err) {
+            console.error("Failed to speak:", err);
+        }
     }
 
-    window.addEventListener("click", onUserInteract);
-    window.addEventListener("scroll", onUserInteract);
-});
+    stopButton.addEventListener("click", () => {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        subtitleBox.textContent = "";
+    });
+
+    const userInput = document.getElementById("user-input");
+    const askButton = document.getElementById("ask-lumina");
+
+    askButton.addEventListener("click", () => {
+        const question = userInput.value.trim();
+        if (question.length > 0) {
+            speak(question);
+            userInput.value = "";
+        }
+    });
+
+    userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            askButton.click();
+        }
+    });
