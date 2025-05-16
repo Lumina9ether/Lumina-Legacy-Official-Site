@@ -16,6 +16,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "lumina-voice-ai.json"
 
 @app.route('/speak', methods=['POST'])
 def speak():
+    try:
     data = request.json
     text = data.get("text", "Welcome to Lumina Legacy. I am your AI assistant.")
 
@@ -35,4 +36,6 @@ def speak():
     with open(output_path, "wb") as out:
         out.write(response.audio_content)
 
-    return {"audio": "/static/greeting.mp3"}
+            return {"audio": "/static/greeting.mp3"}
+    except Exception as e:
+        return {"error": str(e)}, 500
