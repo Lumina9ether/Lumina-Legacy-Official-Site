@@ -36,6 +36,20 @@ def check_missing_memory(memory):
     if not memory["preferences"].get("voice_style"): missing.append("voice_style")
     return missing
 
+
+def update_timeline_from_text(text, memory):
+    keywords = ["mark today as", "record", "log", "note", "milestone"]
+    if any(k in text.lower() for k in keywords):
+        match = re.search(r"(?:mark today as|record|log|note|milestone):?\s*(.+)", text, re.IGNORECASE)
+        if match:
+            event = match.group(1).strip()
+            today = datetime.now().strftime("%Y-%m-%d")
+            timeline = memory.get("timeline", [])
+            timeline.append({"date": today, "event": event})
+            memory["timeline"] = timeline
+    return memory
+
+
 def update_memory_from_text(text, memory):
     if "my name is" in text.lower():
         name = re.search(r"my name is ([a-zA-Z ,.'-]+)", text, re.IGNORECASE)
@@ -84,7 +98,17 @@ def ask():
             f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
         )
 
+        
+        if "what are my milestones" in question.lower():
+            timeline = memory.get("timeline", [])
+            if timeline:
+                milestones_response = "\n".join([f"{m['date']}: {m['event']}" for m in timeline])
+                return jsonify({"reply": f"Here are your milestones:\n{milestones_response}"})
+            else:
+                return jsonify({"reply": "You don't have any milestones recorded yet. You can say: mark today as 'Got my first sale'."})
+
         conversation = [
+        
             {"role": "system", "content": "You are Lumina, a soulful AI guide that adapts to the user's evolving journey."},
             {"role": "system", "content": f"User memory context: {context_intro}"},
             {"role": "user", "content": question}
