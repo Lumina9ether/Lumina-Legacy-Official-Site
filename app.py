@@ -7,8 +7,8 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Set your OpenAI API key here
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize OpenAI client using new SDK format
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route("/")
 def index():
@@ -22,14 +22,14 @@ def ask():
         return jsonify({"reply": "Please ask a question."})
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are Lumina, a helpful, wise and cosmic AI assistant."},
+                {"role": "system", "content": "You are Lumina, a cosmic and helpful AI assistant."},
                 {"role": "user", "content": question}
             ]
         )
-        answer = response["choices"][0]["message"]["content"].strip()
+        answer = response.choices[0].message.content.strip()
         return jsonify({"reply": answer})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
@@ -38,8 +38,8 @@ def ask():
 def speak():
     data = request.get_json()
     text = data.get("text", "")
-    # Here you would integrate ElevenLabs or another TTS service
-    return jsonify({"audio": ""})  # Placeholder audio path or URL
+    # Placeholder — no audio playback implemented
+    return jsonify({"audio": ""})
 
 if __name__ == "__main__":
     app.run(debug=True)
