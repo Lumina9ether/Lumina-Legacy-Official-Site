@@ -190,6 +190,9 @@ def signup():
 
 
 
+
+
+
 @app.route("/submit-signup", methods=["POST"])
 def submit_signup():
     try:
@@ -198,7 +201,7 @@ def submit_signup():
         memory = load_memory()
         memory["personal"]["name"] = name
         save_memory(memory)
-        session['signed_up'] = True
+        session["signed_up"] = True
         return redirect("/#memory-editor")
     except Exception as e:
         return f"Signup failed: {str(e)}", 500
