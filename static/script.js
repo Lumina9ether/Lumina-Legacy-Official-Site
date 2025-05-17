@@ -80,3 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
             askButton.click();
         }
     });
+
+    const orb = document.getElementById("orb");
+
+    function setOrbState(state) {
+        if (!orb) return;
+        orb.classList.remove("orb-idle", "orb-thinking", "orb-speaking");
+        orb.classList.add("orb-" + state);
+    }

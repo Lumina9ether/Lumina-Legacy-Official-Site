@@ -2,10 +2,10 @@
 from flask import Flask, request, render_template
 from google.cloud import texttospeech
 import os
+import traceback
 
 app = Flask(__name__)
 
-# Set path to the Google Cloud service account key (via Render Secrets)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/etc/secrets/lumina-voice-ai.json"
 
 @app.route('/')
@@ -23,7 +23,7 @@ def speak():
 
         voice = texttospeech.VoiceSelectionParams(
             language_code="en-US",
-            name="en-US-Wavenet-D",
+            name="en-US-Wavenet-F",  # Updated to female voice
             ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
         )
 
@@ -36,6 +36,8 @@ def speak():
 
         return {"audio": "/static/greeting.mp3"}
     except Exception as e:
+        print("ERROR in /speak route:", e)
+        traceback.print_exc()
         return {"error": str(e)}, 500
 
 if __name__ == "__main__":

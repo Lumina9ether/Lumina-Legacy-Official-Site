@@ -87,11 +87,34 @@
     border-radius: 10px;
     box-shadow: 0 0 10px #00d4ff;
 }
+
+#orb.orb-idle {
+    box-shadow: 0 0 20px #6e00ff;
+    background: radial-gradient(circle, #6e00ff 20%, #000 100%);
+}
+#orb.orb-thinking {
+    animation: pulse-think 1s infinite;
+    background: radial-gradient(circle, #ffd700 30%, #000 100%);
+}
+#orb.orb-speaking {
+    animation: pulse-speak 0.5s infinite;
+    background: radial-gradient(circle, #00d4ff 30%, #000 100%);
+}
+@keyframes pulse-think {
+    0% { box-shadow: 0 0 10px #ffd700; }
+    50% { box-shadow: 0 0 20px #ffd700; }
+    100% { box-shadow: 0 0 10px #ffd700; }
+}
+@keyframes pulse-speak {
+    0% { box-shadow: 0 0 10px #00d4ff; }
+    50% { box-shadow: 0 0 25px #00ffff; }
+    100% { box-shadow: 0 0 10px #00d4ff; }
+}
 </style>
 </head>
 <body>
 <header><h1 class="glow-title">Lumina Legacy LLC</h1></header>
-<section class="hero"><div class="orb-container"><div class="orb" id="orb"></div>
+<section class="hero"><div class="orb-container"><div class="orb orb-idle" id="orb"></div>
 <div id="chat-container" style="text-align: center; margin: 30px auto;">
 <input id="user-input" placeholder="Ask Lumina a question..." style="
         width: 70%;
