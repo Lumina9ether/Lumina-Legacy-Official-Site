@@ -161,3 +161,20 @@ if __name__ == "__main__":
 def timeline():
     memory = load_memory()
     return jsonify({"timeline": memory.get("timeline", [])})
+
+
+@app.route("/memory")
+def memory_view():
+    return jsonify(load_memory())
+
+@app.route("/update-memory", methods=["POST"])
+def update_memory():
+    data = request.get_json()
+    memory = load_memory()
+    memory["personal"]["name"] = data.get("name", "")
+    memory["business"]["goal"] = data.get("goal", "")
+    memory["preferences"]["voice_style"] = data.get("voice_style", "")
+    memory["business"]["income_target"] = data.get("income_target", "")
+    memory["emotional"]["recent_state"] = data.get("mood", "")
+    save_memory(memory)
+    return jsonify({"status": "success"})

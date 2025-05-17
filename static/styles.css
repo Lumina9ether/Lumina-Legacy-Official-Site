@@ -187,3 +187,36 @@ body { background-color: #000; color: #fff; font-family: Orbitron, sans-serif; }
   line-height: 1.6;
   font-size: 16px;
 }
+
+#memory-editor {
+  max-width: 90%;
+  margin: 40px auto;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #00ffcc;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(0,255,255,0.1);
+}
+#memory-editor h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+#memory-form input {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+#memory-form button {
+  margin-top: 10px;
+  padding: 12px;
+  width: 100%;
+  background: #00ffff;
+  color: black;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+}

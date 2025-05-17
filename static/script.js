@@ -96,3 +96,35 @@ async function loadMilestones() {
 window.onload = () => {
   loadMilestones();
 };
+
+async function loadMemoryForm() {
+  const res = await fetch("/memory");
+  const data = await res.json();
+  if (data) {
+    document.querySelector("input[name='name']").value = data.personal.name || "";
+    document.querySelector("input[name='goal']").value = data.business.goal || "";
+    document.querySelector("input[name='voice_style']").value = data.preferences.voice_style || "";
+    document.querySelector("input[name='income_target']").value = data.business.income_target || "";
+    document.querySelector("input[name='mood']").value = data.emotional.recent_state || "";
+  }
+}
+document.getElementById("memory-form").onsubmit = async function(e) {
+  e.preventDefault();
+  const body = {
+    name: this.name.value,
+    goal: this.goal.value,
+    voice_style: this.voice_style.value,
+    income_target: this.income_target.value,
+    mood: this.mood.value
+  };
+  await fetch("/update-memory", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  });
+  alert("✅ Memory updated!");
+};
+window.onload = () => {
+  loadMilestones?.();
+  loadMemoryForm?.();
+};
