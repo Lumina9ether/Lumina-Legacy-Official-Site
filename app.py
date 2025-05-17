@@ -155,3 +155,9 @@ def speak():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+@app.route("/timeline")
+def timeline():
+    memory = load_memory()
+    return jsonify({"timeline": memory.get("timeline", [])})

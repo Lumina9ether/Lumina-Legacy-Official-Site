@@ -82,3 +82,17 @@
             askButton.click();
         }
     });
+
+async function loadMilestones() {
+  const res = await fetch("/timeline");
+  const data = await res.json();
+  const list = document.getElementById("milestone-list");
+  if (data && data.timeline && data.timeline.length) {
+    list.innerHTML = data.timeline.map(m => `<div>📅 ${m.date}: ${m.event}</div>`).join("");
+  } else {
+    list.innerHTML = "<div>No milestones recorded yet.</div>";
+  }
+}
+window.onload = () => {
+  loadMilestones();
+};

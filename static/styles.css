@@ -165,3 +165,25 @@ body { background-color: #000; color: #fff; font-family: Orbitron, sans-serif; }
   background: radial-gradient(circle, rgba(0,255,100,0.7), rgba(0,0,0,0.9));
   animation: speakRadiate 1.5s ease-in-out infinite;
 }
+
+#timeline-container {
+  max-width: 90%;
+  margin: 40px auto;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #00ffff;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+#timeline-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+#milestone-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-left: 20px;
+  line-height: 1.6;
+  font-size: 16px;
+}
