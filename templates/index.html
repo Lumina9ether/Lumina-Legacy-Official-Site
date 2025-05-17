@@ -110,6 +110,19 @@
     50% { box-shadow: 0 0 25px #00ffff; }
     100% { box-shadow: 0 0 10px #00d4ff; }
 }
+
+#orb.orb-idle {
+    box-shadow: 0 0 20px #6e00ff;
+    background: radial-gradient(circle at center, #6e00ff 20%, #1a0033 100%);
+}
+#orb.orb-thinking {
+    animation: pulse-think 1.2s infinite;
+    background: radial-gradient(circle at center, #ffcc00 30%, #1a1a00 100%);
+}
+#orb.orb-speaking {
+    animation: pulse-speak 0.6s infinite;
+    background: radial-gradient(circle at center, #00e0ff 30%, #001f33 100%);
+}
 </style>
 </head>
 <body>
