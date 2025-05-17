@@ -28,15 +28,42 @@ def ask():
         return jsonify({"reply": "Please ask a question."})
 
     try:
+        memory = load_memory()
+        context_intro = (
+            f"User Name: {memory['personal'].get('name', '')}
+"
+            f"Birthday: {memory['personal'].get('birthday', '')}
+"
+            f"Location: {memory['personal'].get('location', '')}
+"
+            f"Goal: {memory['business'].get('goal', '')}
+"
+            f"Niche: {memory['business'].get('niche', '')}
+"
+            f"Target Income: {memory['business'].get('income_target', '')}
+"
+            f"Voice Style: {memory['preferences'].get('voice_style', '')}
+"
+            f"Theme Color: {memory['preferences'].get('theme_color', '')}
+"
+            f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
+        )
+
+        conversation = [
+            {"role": "system", "content": "You are Lumina, an intelligent and soulful AI who remembers and supports the user with cosmic insight."},
+            {"role": "system", "content": f"Here is the user's context: {context_intro}"},
+            {"role": "user", "content": question}
+        ]
+
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are Lumina, a cosmic and empowering AI guide."},
-                {"role": "user", "content": question}
-            ]
+            messages=conversation
         )
+
         answer = response.choices[0].message.content.strip()
         return jsonify({"reply": answer})
+    except Exception as e:
+        return jsonify({"reply": f"Error: {str(e)}"})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
 
