@@ -79,7 +79,7 @@ def ask():
 
     try:
         session['signed_up'] = True
-    memory = load_memory()
+        memory = load_memory()
         memory = update_memory_from_text(question, memory)
         save_memory(memory)
 
