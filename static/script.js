@@ -52,10 +52,22 @@
     const askButton = document.getElementById("ask-lumina");
     const userInput = document.getElementById("user-input");
 
-    askButton.addEventListener("click", () => {
+    askButton.addEventListener("click", async () => {
         const question = userInput.value.trim();
         if (question.length > 0) {
-            speak(question);
+            try {
+                const response = await fetch("/ask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question }),
+                });
+                const data = await response.json();
+                if (data.reply) {
+                    speak(data.reply);
+                }
+            } catch (err) {
+                console.error("Error:", err);
+            }
             userInput.value = "";
         }
     });
