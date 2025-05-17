@@ -178,3 +178,17 @@ def update_memory():
     memory["emotional"]["recent_state"] = data.get("mood", "")
     save_memory(memory)
     return jsonify({"status": "success"})
+
+
+@app.route("/signup")
+def signup():
+    return render_template("signup.html")
+
+@app.route("/submit-signup", methods=["POST"])
+def submit_signup():
+    name = request.form.get("name")
+    email = request.form.get("email")
+    memory = load_memory()
+    memory["personal"]["name"] = name
+    save_memory(memory)
+    return redirect("/#memory-editor")

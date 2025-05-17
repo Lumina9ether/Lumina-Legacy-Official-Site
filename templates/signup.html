@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Free eBook Signup</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ffff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    form {
+      display: inline-block;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+    }
+    input {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      padding: 12px;
+      background: #00ffff;
+      color: black;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎁 Get Your Free eBook</h1>
+  <p>Sign up to access your memory dashboard and save your journey with Lumina.</p>
+  <form action="/submit-signup" method="POST">
+    <input type="text" name="name" placeholder="Your Name" required />
+    <input type="email" name="email" placeholder="Your Email" required />
+    <button type="submit">📘 Download eBook + Access Lumina</button>
+  </form>
+</body>
+</html>
