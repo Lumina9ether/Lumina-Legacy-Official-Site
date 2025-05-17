@@ -4,6 +4,31 @@ from flask_cors import CORS
 import openai
 import os
 import uuid
+
+import re
+
+def check_missing_memory(memory):
+    missing = []
+    if not memory["personal"].get("name"): missing.append("name")
+    if not memory["business"].get("goal"): missing.append("goal")
+    if not memory["preferences"].get("voice_style"): missing.append("voice_style")
+    return missing
+
+def update_memory_from_text(text, memory):
+    if "my name is" in text.lower():
+        name = re.search(r"my name is ([a-zA-Z ,.'-]+)", text, re.IGNORECASE)
+        if name:
+            memory["personal"]["name"] = name.group(1).strip()
+    if "my goal is" in text.lower():
+        goal = re.search(r"my goal is (.+)", text, re.IGNORECASE)
+        if goal:
+            memory["business"]["goal"] = goal.group(1).strip()
+    if "speak in" in text.lower():
+        style = re.search(r"speak in (.+)", text, re.IGNORECASE)
+        if style:
+            memory["preferences"]["voice_style"] = style.group(1).strip()
+    return memory
+
 from google.cloud import texttospeech
 
 app = Flask(__name__)
@@ -29,8 +54,27 @@ def ask():
 
     try:
         memory = load_memory()
-        context_intro = (
-            f"User Name: {memory['personal'].get('name', '')}
+        memory = update_memory_from_text(question, memory)
+        save_memory(memory)
+
+        missing = check_missing_memory(memory)
+        ask_back_note = ""
+        if missing:
+            ask_back_note = f"By the way, I’d love to know your {', '.join(missing)}. You can tell me by saying things like 'My goal is...' or 'My name is...'"
+
+        
+context_intro = (
+    f"User Name: {memory['personal'].get('name', '')}\n"
+    f"Birthday: {memory['personal'].get('birthday', '')}\n"
+    f"Location: {memory['personal'].get('location', '')}\n"
+    f"Goal: {memory['business'].get('goal', '')}\n"
+    f"Niche: {memory['business'].get('niche', '')}\n"
+    f"Target Income: {memory['business'].get('income_target', '')}\n"
+    f"Voice Style: {memory['preferences'].get('voice_style', '')}\n"
+    f"Theme Color: {memory['preferences'].get('theme_color', '')}\n"
+    f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
+)
+}
 "
             f"Birthday: {memory['personal'].get('birthday', '')}
 "
@@ -50,8 +94,8 @@ def ask():
         )
 
         conversation = [
-            {"role": "system", "content": "You are Lumina, an intelligent and soulful AI who remembers and supports the user with cosmic insight."},
-            {"role": "system", "content": f"Here is the user's context: {context_intro}"},
+            {"role": "system", "content": "You are Lumina, a soulful AI guide that adapts to the user's evolving journey."},
+            {"role": "system", "content": f"User memory context: {context_intro}"},
             {"role": "user", "content": question}
         ]
 
@@ -61,7 +105,15 @@ def ask():
         )
 
         answer = response.choices[0].message.content.strip()
+
+        if ask_back_note:
+            answer += "
+
+" + ask_back_note
+
         return jsonify({"reply": answer})
+    except Exception as e:
+        return jsonify({"reply": f"Error: {str(e)}"})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
     except Exception as e:
