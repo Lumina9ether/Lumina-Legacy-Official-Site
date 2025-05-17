@@ -188,12 +188,17 @@ def update_memory():
 def signup():
     return render_template("signup.html")
 
+
+
 @app.route("/submit-signup", methods=["POST"])
 def submit_signup():
-    name = request.form.get("name")
-    email = request.form.get("email")
-    session['signed_up'] = True
-    memory = load_memory()
-    memory["personal"]["name"] = name
-    save_memory(memory)
-    return redirect("/#memory-editor")
+    try:
+        name = request.form.get("name")
+        email = request.form.get("email")
+        memory = load_memory()
+        memory["personal"]["name"] = name
+        save_memory(memory)
+        session['signed_up'] = True
+        return redirect("/#memory-editor")
+    except Exception as e:
+        return f"Signup failed: {str(e)}", 500
