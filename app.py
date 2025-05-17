@@ -1,44 +1,45 @@
 
-from flask import Flask, request, render_template
-from google.cloud import texttospeech
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+import openai
 import os
-import traceback
 
 app = Flask(__name__)
+CORS(app)
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/etc/secrets/lumina-voice-ai.json"
+# Set your OpenAI API key here
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-@app.route('/speak', methods=['POST'])
-def speak():
+@app.route("/ask", methods=["POST"])
+def ask():
+    data = request.get_json()
+    question = data.get("question", "")
+    if not question:
+        return jsonify({"reply": "Please ask a question."})
+
     try:
-        data = request.json
-        text = data.get("text", "Welcome to Lumina Legacy. I am your AI assistant.")
-
-        client = texttospeech.TextToSpeechClient()
-        input_text = texttospeech.SynthesisInput(text=text)
-
-        voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US",
-            name="en-US-Wavenet-F",  # Updated to female voice
-            ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are Lumina, a helpful, wise and cosmic AI assistant."},
+                {"role": "user", "content": question}
+            ]
         )
-
-        audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
-        response = client.synthesize_speech(input=input_text, voice=voice, audio_config=audio_config)
-
-        output_path = "static/greeting.mp3"
-        with open(output_path, "wb") as out:
-            out.write(response.audio_content)
-
-        return {"audio": "/static/greeting.mp3"}
+        answer = response["choices"][0]["message"]["content"].strip()
+        return jsonify({"reply": answer})
     except Exception as e:
-        print("ERROR in /speak route:", e)
-        traceback.print_exc()
-        return {"error": str(e)}, 500
+        return jsonify({"reply": f"Error: {str(e)}"})
+
+@app.route("/speak", methods=["POST"])
+def speak():
+    data = request.get_json()
+    text = data.get("text", "")
+    # Here you would integrate ElevenLabs or another TTS service
+    return jsonify({"audio": ""})  # Placeholder audio path or URL
 
 if __name__ == "__main__":
     app.run(debug=True)
