@@ -9,6 +9,7 @@ import re
 from google.cloud import texttospeech
 
 app = Flask(__name__)
+app.secret_key = 'lumina_secret_key'
 CORS(app)
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -77,7 +78,8 @@ def ask():
         return jsonify({"reply": "Please ask a question."})
 
     try:
-        memory = load_memory()
+        session['signed_up'] = True
+    memory = load_memory()
         memory = update_memory_from_text(question, memory)
         save_memory(memory)
 
@@ -159,6 +161,7 @@ if __name__ == "__main__":
 
 @app.route("/timeline")
 def timeline():
+    session['signed_up'] = True
     memory = load_memory()
     return jsonify({"timeline": memory.get("timeline", [])})
 
@@ -170,6 +173,7 @@ def memory_view():
 @app.route("/update-memory", methods=["POST"])
 def update_memory():
     data = request.get_json()
+    session['signed_up'] = True
     memory = load_memory()
     memory["personal"]["name"] = data.get("name", "")
     memory["business"]["goal"] = data.get("goal", "")
@@ -188,6 +192,7 @@ def signup():
 def submit_signup():
     name = request.form.get("name")
     email = request.form.get("email")
+    session['signed_up'] = True
     memory = load_memory()
     memory["personal"]["name"] = name
     save_memory(memory)
