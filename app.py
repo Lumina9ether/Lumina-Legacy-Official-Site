@@ -1,11 +1,33 @@
 
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import openai
 import os
 import uuid
-
+import json
 import re
+from google.cloud import texttospeech
+
+app = Flask(__name__)
+CORS(app)
+
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "lumina-voice-ai.json"
+tts_client = texttospeech.TextToSpeechClient()
+
+MEMORY_FILE = "memory.json"
+
+def load_memory():
+    try:
+        with open(MEMORY_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_memory(data):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
 def check_missing_memory(memory):
     missing = []
@@ -29,18 +51,6 @@ def update_memory_from_text(text, memory):
             memory["preferences"]["voice_style"] = style.group(1).strip()
     return memory
 
-from google.cloud import texttospeech
-
-app = Flask(__name__)
-CORS(app)
-
-# OpenAI setup
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# Set up Google Cloud Text-to-Speech
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "lumina-voice-ai.json"
-tts_client = texttospeech.TextToSpeechClient()
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -62,34 +72,15 @@ def ask():
         if missing:
             ask_back_note = f"By the way, I’d love to know your {', '.join(missing)}. You can tell me by saying things like 'My goal is...' or 'My name is...'"
 
-        
-context_intro = (
-    f"User Name: {memory['personal'].get('name', '')}\n"
-    f"Birthday: {memory['personal'].get('birthday', '')}\n"
-    f"Location: {memory['personal'].get('location', '')}\n"
-    f"Goal: {memory['business'].get('goal', '')}\n"
-    f"Niche: {memory['business'].get('niche', '')}\n"
-    f"Target Income: {memory['business'].get('income_target', '')}\n"
-    f"Voice Style: {memory['preferences'].get('voice_style', '')}\n"
-    f"Theme Color: {memory['preferences'].get('theme_color', '')}\n"
-    f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
-)
-}
-"
-            f"Birthday: {memory['personal'].get('birthday', '')}
-"
-            f"Location: {memory['personal'].get('location', '')}
-"
-            f"Goal: {memory['business'].get('goal', '')}
-"
-            f"Niche: {memory['business'].get('niche', '')}
-"
-            f"Target Income: {memory['business'].get('income_target', '')}
-"
-            f"Voice Style: {memory['preferences'].get('voice_style', '')}
-"
-            f"Theme Color: {memory['preferences'].get('theme_color', '')}
-"
+        context_intro = (
+            f"User Name: {memory['personal'].get('name', '')}\n"
+            f"Birthday: {memory['personal'].get('birthday', '')}\n"
+            f"Location: {memory['personal'].get('location', '')}\n"
+            f"Goal: {memory['business'].get('goal', '')}\n"
+            f"Niche: {memory['business'].get('niche', '')}\n"
+            f"Target Income: {memory['business'].get('income_target', '')}\n"
+            f"Voice Style: {memory['preferences'].get('voice_style', '')}\n"
+            f"Theme Color: {memory['preferences'].get('theme_color', '')}\n"
             f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
         )
 
@@ -107,15 +98,9 @@ context_intro = (
         answer = response.choices[0].message.content.strip()
 
         if ask_back_note:
-            answer += "
-
-" + ask_back_note
+            answer += "\n\n" + ask_back_note
 
         return jsonify({"reply": answer})
-    except Exception as e:
-        return jsonify({"reply": f"Error: {str(e)}"})
-    except Exception as e:
-        return jsonify({"reply": f"Error: {str(e)}"})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
 
@@ -130,18 +115,11 @@ def speak():
         synthesis_input = texttospeech.SynthesisInput(text=text)
         voice = texttospeech.VoiceSelectionParams(
             language_code="en-US",
-            name="en-US-Wavenet-F",  # Choose any preferred voice here
+            name="en-US-Wavenet-F",
             ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
         )
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3
-        )
-
-        response = tts_client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice,
-            audio_config=audio_config
-        )
+        audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
+        response = tts_client.synthesize_speech(input=synthesis_input, voice=voice, audio_config=audio_config)
 
         filename = f"static/audio_{uuid.uuid4().hex}.mp3"
         with open(filename, "wb") as out:
