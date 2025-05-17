@@ -193,6 +193,8 @@ def signup():
 
 
 
+
+
 @app.route("/submit-signup", methods=["POST"])
 def submit_signup():
     try:
