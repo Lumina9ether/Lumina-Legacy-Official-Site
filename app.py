@@ -16,11 +16,11 @@ client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "lumina-voice-ai.json"
 tts_client = texttospeech.TextToSpeechClient()
 
-    user_id = session.get('user_id', 'default')
-    memory_file = f'memory_{user_id}.json'
 MEMORY_FILE = memory_file
 
 def load_memory():
+    user_id = session.get('user_id', 'default')
+    memory_file = f'memory_{user_id}.json'
     try:
         with open(MEMORY_FILE, "r") as f:
             return json.load(f)
