@@ -1,5 +1,5 @@
 
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import openai
 import os
@@ -71,6 +71,65 @@ def index():
     return render_template("index.html")
 
 @app.route("/ask", methods=["POST"])
+def ask():
+    data = request.get_json()
+    question = data.get("question", "")
+    if not question:
+        return jsonify({"reply": "Please ask a question."})
+
+    try:
+        session['signed_up'] = True
+    memory = load_memory()
+        memory = update_memory_from_text(question, memory)
+        save_memory(memory)
+
+        missing = check_missing_memory(memory)
+        ask_back_note = ""
+        if missing:
+            ask_back_note = f"By the way, I’d love to know your {', '.join(missing)}. You can tell me by saying things like 'My goal is...' or 'My name is...'"
+
+        context_intro = (
+            f"User Name: {memory['personal'].get('name', '')}\n"
+            f"Birthday: {memory['personal'].get('birthday', '')}\n"
+            f"Location: {memory['personal'].get('location', '')}\n"
+            f"Goal: {memory['business'].get('goal', '')}\n"
+            f"Niche: {memory['business'].get('niche', '')}\n"
+            f"Target Income: {memory['business'].get('income_target', '')}\n"
+            f"Voice Style: {memory['preferences'].get('voice_style', '')}\n"
+            f"Theme Color: {memory['preferences'].get('theme_color', '')}\n"
+            f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
+        )
+
+        
+        if "what are my milestones" in question.lower():
+            timeline = memory.get("timeline", [])
+            if timeline:
+                milestones_response = "\n".join([f"{m['date']}: {m['event']}" for m in timeline])
+                return jsonify({"reply": f"Here are your milestones:\n{milestones_response}"})
+            else:
+                return jsonify({"reply": "You don't have any milestones recorded yet. You can say: mark today as 'Got my first sale'."})
+
+        conversation = [
+        
+            {"role": "system", "content": "You are Lumina, a soulful AI guide that adapts to the user's evolving journey."},
+            {"role": "system", "content": f"User memory context: {context_intro}"},
+            {"role": "user", "content": question}
+        ]
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=conversation
+        )
+
+        answer = response.choices[0].message.content.strip()
+
+        if ask_back_note:
+            answer += "\n\n" + ask_back_note
+
+        return jsonify({"reply": answer})
+    except Exception as e:
+        return jsonify({"reply": f"Error: {str(e)}"})
+
 @app.route("/speak", methods=["POST"])
 def speak():
     data = request.get_json()
@@ -148,20 +207,3 @@ def submit_signup():
         return redirect("/#memory-editor")
     except Exception as e:
         return f"Signup failed: {str(e)}", 500
-
-@app.route("/ask", methods=["POST"])
-def ask():
-    data = request.get_json()
-    question = data.get("question", "")
-    if not question:
-        return jsonify({"reply": "Please ask a question."})
-
-    try:
-        session["signed_up"] = True
-        memory = load_memory()
-        # Placeholder response for now (replace with OpenAI logic later)
-        response = f"Lumina heard: {question}"
-        return jsonify({"reply": response})
-    except Exception as e:
-        print("ERROR IN /ask:", str(e))
-        return jsonify({"reply": f"Error: {str(e)}"}), 500
