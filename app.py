@@ -9,7 +9,6 @@ import re
 from google.cloud import texttospeech
 
 app = Flask(__name__)
-app.secret_key = 'lumina_secret_key'
 CORS(app)
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -78,8 +77,7 @@ def ask():
         return jsonify({"reply": "Please ask a question."})
 
     try:
-        session['signed_up'] = True
-    memory = load_memory()
+        memory = load_memory()
         memory = update_memory_from_text(question, memory)
         save_memory(memory)
 
@@ -161,7 +159,6 @@ if __name__ == "__main__":
 
 @app.route("/timeline")
 def timeline():
-    session['signed_up'] = True
     memory = load_memory()
     return jsonify({"timeline": memory.get("timeline", [])})
 
@@ -173,7 +170,6 @@ def memory_view():
 @app.route("/update-memory", methods=["POST"])
 def update_memory():
     data = request.get_json()
-    session['signed_up'] = True
     memory = load_memory()
     memory["personal"]["name"] = data.get("name", "")
     memory["business"]["goal"] = data.get("goal", "")
@@ -182,23 +178,3 @@ def update_memory():
     memory["emotional"]["recent_state"] = data.get("mood", "")
     save_memory(memory)
     return jsonify({"status": "success"})
-
-
-@app.route("/signup")
-def signup():
-    return render_template("signup.html")
-
-
-
-@app.route("/submit-signup", methods=["POST"])
-def submit_signup():
-    try:
-        name = request.form.get("name")
-        email = request.form.get("email")
-        memory = load_memory()
-        memory["personal"]["name"] = name
-        save_memory(memory)
-        session['signed_up'] = True
-        return redirect("/#memory-editor")
-    except Exception as e:
-        return f"Signup failed: {str(e)}", 500
