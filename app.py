@@ -82,8 +82,7 @@ def ask():
         save_memory(memory)
 
         missing = check_missing_memory(memory)
-        ask_back_note = ""
-        if missing:
+                if missing:
             ask_back_note = f"By the way, I’d love to know your {', '.join(missing)}. You can tell me by saying things like 'My goal is...' or 'My name is...'"
 
         context_intro = (
