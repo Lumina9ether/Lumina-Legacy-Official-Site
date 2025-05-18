@@ -16,11 +16,9 @@ client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "lumina-voice-ai.json"
 tts_client = texttospeech.TextToSpeechClient()
 
-MEMORY_FILE = memory_file
+MEMORY_FILE = "memory.json"
 
 def load_memory():
-    user_id = session.get('user_id', 'default')
-    memory_file = f'memory_{user_id}.json'
     try:
         with open(MEMORY_FILE, "r") as f:
             return json.load(f)
@@ -71,7 +69,91 @@ def update_memory_from_text(text, memory):
 def index():
     return render_template("index.html")
 
+
+from flask import Flask, request, jsonify, render_template, make_response
+import uuid
+
+# Replace existing memory functions
+def load_all_memory():
+    try:
+        with open(MEMORY_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_all_memory(all_memory):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(all_memory, f, indent=2)
+
+def get_user_id():
+    user_id = request.cookies.get("user_id")
+    if not user_id:
+        user_id = str(uuid.uuid4())
+    return user_id
+
+def get_user_memory(user_id):
+    all_memory = load_all_memory()
+    if user_id not in all_memory:
+        all_memory[user_id] = {
+            "personal": {},
+            "business": {},
+            "preferences": {},
+            "emotional": {},
+            "timeline": []
+        }
+    return all_memory, all_memory[user_id]
+
+def save_user_memory(user_id, all_memory):
+    save_all_memory(all_memory)
+
 @app.route("/ask", methods=["POST"])
+def ask():
+    data = request.get_json()
+    question = data.get("question", "")
+    if not question:
+        return jsonify({"reply": "Please ask a question."})
+
+    user_id = get_user_id()
+    all_memory, user_memory = get_user_memory(user_id)
+
+    user_memory = update_memory_from_text(question, user_memory)
+    user_memory = update_timeline_from_text(question, user_memory)
+    all_memory[user_id] = user_memory
+    save_user_memory(user_id, all_memory)
+
+    missing = check_missing_memory(user_memory)
+    ask_back_note = ""
+    if missing:
+        ask_back_note = f"By the way, I’d love to know your {', '.join(missing)}. You can tell me by saying things like 'My goal is...' or 'My name is...'."
+
+    context_intro = (
+        f"User Name: {user_memory['personal'].get('name', '')}\n"
+        f"Birthday: {user_memory['personal'].get('birthday', '')}\n"
+        f"Location: {user_memory['personal'].get('location', '')}\n"
+        f"Goal: {user_memory['business'].get('goal', '')}\n"
+        f"Niche: {user_memory['business'].get('niche', '')}\n"
+        f"Target Income: {user_memory['business'].get('income_target', '')}\n"
+        f"Voice Style: {user_memory['preferences'].get('voice_style', '')}\n"
+        f"Theme Color: {user_memory['preferences'].get('theme_color', '')}\n"
+        f"Recent Mood: {user_memory['emotional'].get('recent_state', '')}, Motivation Level: {user_memory['emotional'].get('motivation_level', 0)}"
+    )
+
+    # Make OpenAI request using context + user input
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": f"You are Lumina, a helpful assistant. Here is the user's context:\n{context_intro}"},
+            {"role": "user", "content": question}
+        ]
+    )
+
+    reply = response.choices[0].message.content.strip()
+    reply += f"\n\n{ask_back_note}" if ask_back_note else ""
+
+    resp = make_response(jsonify({"reply": reply}))
+    resp.set_cookie("user_id", user_id, max_age=60*60*24*30)  # 30 days
+    return resp
+
 def ask():
     data = request.get_json()
     question = data.get("question", "")
