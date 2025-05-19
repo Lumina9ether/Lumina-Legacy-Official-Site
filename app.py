@@ -81,10 +81,6 @@ def ask():
         memory = update_memory_from_text(question, memory)
         save_memory(memory)
 
-        missing = check_missing_memory(memory)
-                if missing:
-            ask_back_note = f"By the way, I’d love to know your {', '.join(missing)}. You can tell me by saying things like 'My goal is...' or 'My name is...'"
-
         context_intro = (
             f"User Name: {memory['personal'].get('name', '')}\n"
             f"Birthday: {memory['personal'].get('birthday', '')}\n"
@@ -97,7 +93,6 @@ def ask():
             f"Recent Mood: {memory['emotional'].get('recent_state', '')}, Motivation Level: {memory['emotional'].get('motivation_level', 0)}"
         )
 
-        
         if "what are my milestones" in question.lower():
             timeline = memory.get("timeline", [])
             if timeline:
@@ -107,7 +102,6 @@ def ask():
                 return jsonify({"reply": "You don't have any milestones recorded yet. You can say: mark today as 'Got my first sale'."})
 
         conversation = [
-        
             {"role": "system", "content": "You are Lumina, a soulful AI guide that adapts to the user's evolving journey."},
             {"role": "system", "content": f"User memory context: {context_intro}"},
             {"role": "user", "content": question}
@@ -119,13 +113,11 @@ def ask():
         )
 
         answer = response.choices[0].message.content.strip()
-
-        if ask_back_note:
-            answer += "\n\n" + ask_back_note
-
         return jsonify({"reply": answer})
+
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
+
 
 @app.route("/speak", methods=["POST"])
 def speak():
